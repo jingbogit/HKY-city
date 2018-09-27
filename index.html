@@ -1,0 +1,266 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title> Hangzhou </title>
+    <style>
+        .mainBox {
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            bottom: 0;
+        }
+
+        .mainBox .leftBox {
+            height: 100%;
+            width: 240px;
+            float: left;
+            overflow: auto;
+            background: #f8f8ee;
+            font-size: 12px;
+            font-family: "Microsoft Yahei", "SimSun", Arial;
+            border-right: 1px solid #D9D9D9;
+            border-top: 1px solid #D9D9D9;
+        }
+
+        .mainBox .rightBox {
+            height: 100%;
+            margin-left: 241px;
+            padding-right: 1px;
+            padding-left: 1px;
+            border-left: 1px solid #E6E6E6;
+            border-top: 1px solid #D9D9D9;
+            overflow: auto;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+
+<body style="margin: 0px; padding: 0px;">
+    <div class="mainBox">
+        <div class="leftBox">
+            <script type="text/javascript" src="https://beta.altizure.cn/sdk"></script>
+            <p id="demoDiv"></p>
+            <script>
+                document.addEventListener('3d_element_request', function (e) {
+                    const requestMessage = JSON.stringify(e.detail)
+                    document.getElementById("demoDiv").innerHTML = requestMessage
+                    console.log(requestMessage)
+                }, false)</script>
+        </div>
+        <div class="rightBox">
+            <div id="page-content"></div>
+            <script type="text/javascript" src="https://beta.altizure.cn/sdk"></script>
+            <script src="https://unpkg.com/dat.gui@0.7.2/build/dat.gui.min.js"></script>
+            <script type="text/javascript" src="./crop_boundary.js"></script>
+            <script type="text/javascript" src="./RequestEvent.js"></script>
+            <script type="text/javascript" src="./data/窨井盖信息.js"></script>
+            <script type="text/javascript" src="./data/垃圾桶信息.js"></script>
+
+            <script>
+                const centerPosition = { lng: 120.1836688, lat: 30.33083, alt: 1 }
+
+                // 初始化 sandbox
+                const options = {
+                    altizureApi: {
+                        key: '7MkQf8UggsPaadvrlKALspJWZejZAJOLHn3cnIy'
+                    },
+                    camera: {
+                        poseTo: {
+                            alt: 1000,
+                            lat: centerPosition.lat,
+                            lng: centerPosition.lng
+                        },
+                        flyTo: {
+                            alt: 5000,
+                            lat: centerPosition.lat,
+                            lng: centerPosition.lng,
+                            north: 0,
+                            tilt: 40
+                        }
+                    },
+                    renderItems: {
+                        earth: true,
+                        earthUseTexture: false,
+                        featureInView: false,
+                        orbitRing: false
+                    }
+                }
+
+                let sandbox = new altizure.Sandbox('page-content', options)
+
+                // 下城区边界
+                let volume1 = {
+                    color: 0xf18100,
+                    opacity: 0.3,
+                    points: boundary,
+                    top: 200,
+                    bottom: 0,
+                }
+                let poly1 = new altizure.PolygonMarker({
+                    volume: volume1,
+                    sandbox: sandbox,
+                    name: 'polygon1',
+                    interactable: true
+                })
+                poly1.visible = false
+                poly1.on('mouseenter', function (event) {
+                    poly1.opacity = 0.3
+                })
+                poly1.on('mouseleave', function (event) {
+                    poly1.opacity = 0.1
+                })
+
+                // 三位实景模型，需替换成对应pid，请咨询王叶
+                let projs = [
+                    {
+                        //section 1
+                        pid: '5b9b98623dd157137e71fa09',
+                        center: { x: 0, y: 0, z: 0 },
+                        marker: null
+                    },
+                    {
+                        //section 2
+                        pid: '5b9b98623dd157137e71fa09',
+                        center: { x: 900, y: 0, z: 0 },
+                        marker: null
+                    },
+                    {
+                        //section 3
+                        pid: '5b9b98623dd157137e71fa09',
+                        center: { x: 900, y: 900, z: 0 },
+                        marker: null
+                    },
+                    {
+                        //section 4
+                        pid: '5b9b98623dd157137e71fa09',
+                        center: { x: 0, y: 900, z: 0 },
+                        marker: null
+                    },
+                ]
+
+                // 加载三维模型
+                Promise.all(addProjects(projs))
+                    .then(function () {
+                        // use the first project as the base
+                        let baseMarker = projs[0].marker
+                        let baseCenter = projs[0].center
+                        baseMarker.position = centerPosition
+
+                        gs = new altizure.GeoSystem({
+                            sandbox: sandbox,
+                            base: baseMarker,
+                            baseCenter: baseCenter,
+                            EPSG: '4549'
+                        })
+
+                        // align other projects to the base project
+                        for (let pi = 1; pi < projs.length; pi++) {
+                            gs.align({ marker: projs[pi].marker, markerCenter: projs[pi].center })
+                            // projs[pi].marker.crop(boundary, false) // 裁剪
+                        }
+                        return sandbox.camera.lookAt(baseMarker, 0, 40, 1000)
+                    })
+                function addProjects(pList) {
+                    let tList = pList.map(function (project) {
+                        return sandbox.add('AltizureProjectMarker', { pid: project.pid })
+                            .then(function (marker) {
+                                console.log('marker', marker)
+                                project.marker = marker
+                                marker.dim() // hide the blue square around the marker
+                                return marker.initialized
+                            })
+                            .then((marker) => {
+                                return marker.loadCropMask()
+                            })
+                            .then((marker) => {
+                                return Promise.resolve(marker)
+                            })
+                    })
+                    return tList
+                }
+
+            </script>
+
+            <script src="https://unpkg.com/dat.gui@0.7.2/build/dat.gui.min.js"></script>
+            <script>
+                let layer_yjgxx = [] // 井盖图层
+                let layer_ljtxx = [] // 垃圾桶图层
+
+                // 测试用UI
+                var gui = new dat.GUI()
+                gui.add({ hide: false }, 'hide').name('显示下城区边界').onChange((v) => {
+                    poly1.visible = v
+                })
+
+                gui.add({ hide: false }, 'hide').name('显示窨井盖').onChange((v) => {
+                    if (v) {
+                        layer_yjgxx = createFeaturePoint(yjgxx)
+                        console.log(yjgxx)
+                    }
+                    else {
+                        layer_yjgxx.map(function (point) {
+                            point.destruct()
+                        })
+                    }
+                })
+                gui.add({ hide: false }, 'hide').name('显示垃圾桶').onChange((v) => {
+                    if (v == true) {
+                        layer_ljtxx = createFeaturePoint(ljtxx)
+                        console.log(ljtxx)
+                    }
+                    else {
+                        layer_ljtxx.map(function (point) {
+                            point.destruct()
+                        })
+                    }
+                })
+
+                // 加载点数据
+                function createFeaturePoint(featurePointData) {
+                    let pplist = featurePointData.features
+                    let name = featurePointData.name
+                    let layer = []
+
+                    const iconMap = {
+                        'yjgxx': './asset/img/manhole-cover-s.png', // 井盖图标
+                        "ljtxx": './asset/img/Trash.png' // 垃圾桶图标
+                    }
+                    const icon = iconMap[name]
+
+                    let point = pplist.map(function (project) {
+                        // 生成一个图标标注
+                        let tag = new altizure.TagMarker({
+                            // 图标地址 img url
+                            imgUrl: icon,
+                            // 图标位置 icon position
+                            position: {
+                                "lng": project.geometry.coordinates[0],
+                                "lat": project.geometry.coordinates[1],
+                                "alt": project.geometry.coordinates[2],
+                            },
+                            // 沙盒 sandbox
+                            sandbox: sandbox,
+                            // 指针
+                            pinLength: 50,
+                            // 图标尺寸
+                            fixedSize: 30
+                        })
+                        tag.interactable = true
+                        tag.on('mouseenter', (e) => { tag.scale = 6 })
+                        tag.on('mouseleave', (e) => { tag.scale = 5 })
+                        // 响应点击事件
+                        tag.on('click', (e) => {
+                            request({ project }) // 发送一个事件，传递给 2D UI 响应
+                        })
+                        layer.push(tag)
+                    })
+                    return layer
+                }
+
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
