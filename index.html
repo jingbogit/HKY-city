@@ -40,23 +40,35 @@
     <div class="mainBox">
         <div class="leftBox">
             <script type="text/javascript" src="https://beta.altizure.cn/sdk"></script>
+            <button id='xcmy'>下城漫游</button>
+            <button id='wggl'>网格管理</button>
+            <button id='lyjj'>楼宇经济</button>
+            <button id='rkfb'>人口分布</button>
+            <button id='qcnr'>清除内容</button>
             <p id="demoDiv"></p>
             <script>
                 document.addEventListener('3d_element_request', function (e) {
                     const requestMessage = JSON.stringify(e.detail)
                     document.getElementById("demoDiv").innerHTML = requestMessage
                     console.log(requestMessage)
-                }, false)</script>
+                }, false)
+                var qcnr = document.getElementById('qcnr')
+                qcnr.addEventListener('click', function () {
+                    document.getElementById("demoDiv").innerHTML = null
+                })
+            </script>
         </div>
         <div class="rightBox">
             <div id="page-content"></div>
             <script type="text/javascript" src="https://beta.altizure.cn/sdk"></script>
-            <script src="https://unpkg.com/dat.gui@0.7.2/build/dat.gui.min.js"></script>
+            <script type="text/javascript" src="https://beta.altizure.cn/sdk-plugin-geosystem"></script>
+            <!-- <script src="https://unpkg.com/dat.gui@0.7.2/build/dat.gui.min.js"></script> -->
             <script type="text/javascript" src="./crop_boundary.js"></script>
             <script type="text/javascript" src="./RequestEvent.js"></script>
             <script type="text/javascript" src="./data/窨井盖信息.js"></script>
             <script type="text/javascript" src="./data/垃圾桶信息.js"></script>
-
+            <script type="text/javascript" src="./data/网格.js"></script>
+            <script type="text/javascript" src="./data/蔚蓝国际分层分户/wlgj.js"></script>
             <script>
                 const centerPosition = { lng: 120.1836688, lat: 30.33083, alt: 1 }
 
@@ -81,13 +93,14 @@
                     },
                     renderItems: {
                         earth: true,
-                        earthUseTexture: false,
+                        earthUseTexture: true,
                         featureInView: false,
                         orbitRing: false
                     }
                 }
 
                 let sandbox = new altizure.Sandbox('page-content', options)
+                var gs
 
                 // 下城区边界
                 let volume1 = {
@@ -97,6 +110,7 @@
                     top: 200,
                     bottom: 0,
                 }
+                console.log(boundary)
                 let poly1 = new altizure.PolygonMarker({
                     volume: volume1,
                     sandbox: sandbox,
@@ -161,6 +175,40 @@
                         }
                         return sandbox.camera.lookAt(baseMarker, 0, 40, 1000)
                     })
+                /**
+                .then(function () {
+                     //偏移test
+                    var epsgPosition = {lng: 120.17003291531992, lat: 30.312460993840286, alt: 0}
+                    let tag = new altizure.TagMarker({
+                        // 图标地址 img url
+                        imgUrl: './asset/img/manhole-cover-s.png',
+                        // 图标位置 icon position
+                        position: epsgPosition,
+                        // 沙盒 sandbox
+                        sandbox: sandbox,
+                        // 指针
+                        pinLength: 50,
+                        // 图标尺寸
+                        fixedSize: 30
+                    })
+                    var sdkPosition = gs.invert(epsgPosition)
+                    let tag1 = new altizure.TagMarker({
+                        // 图标地址 img url
+                        imgUrl: './asset/img/manhole-cover-s.png',
+                        // 图标位置 icon position
+                        position: sdkPosition,
+                        // 沙盒 sandbox
+                        sandbox: sandbox,
+                        // 指针
+                        pinLength: 50,
+                        // 图标尺寸
+                        fixedSize: 50
+                    })
+
+                    //gs.convert({lng, lat, lat}) => {lng, lat, alt}
+                    //gs.invert({lng, lat, lat}) => {lng, lat, alt}
+                })
+                */
                 function addProjects(pList) {
                     let tList = pList.map(function (project) {
                         return sandbox.add('AltizureProjectMarker', { pid: project.pid })
@@ -180,20 +228,32 @@
                     return tList
                 }
 
+
+
+
             </script>
 
             <script src="https://unpkg.com/dat.gui@0.7.2/build/dat.gui.min.js"></script>
+            <script type="text/javascript" src="https://beta.altizure.cn/sdk-plugin-geojson"></script>
+
             <script>
+
+                var gui = new dat.GUI()
+                let xcmyFolder = gui.addFolder('下城漫游')
+                xcmyFolder.open()
+                let wgglFolder = gui.addFolder('网格管理')
+                wgglFolder.open()
+                let lyjjFolder = gui.addFolder('楼宇经济')
+                lyjjFolder.open()
+                //下城漫游功能实现
+
                 let layer_yjgxx = [] // 井盖图层
                 let layer_ljtxx = [] // 垃圾桶图层
-
-                // 测试用UI
-                var gui = new dat.GUI()
-                gui.add({ hide: false }, 'hide').name('显示下城区边界').onChange((v) => {
+                // 测试用UI 
+                xcmyFolder.add({ hide: false }, 'hide').name('显示下城区边界').onChange((v) => {
                     poly1.visible = v
                 })
-
-                gui.add({ hide: false }, 'hide').name('显示窨井盖').onChange((v) => {
+                xcmyFolder.add({ hide: false }, 'hide').name('显示窨井盖').onChange((v) => {
                     if (v) {
                         layer_yjgxx = createFeaturePoint(yjgxx)
                         console.log(yjgxx)
@@ -204,7 +264,7 @@
                         })
                     }
                 })
-                gui.add({ hide: false }, 'hide').name('显示垃圾桶').onChange((v) => {
+                xcmyFolder.add({ hide: false }, 'hide').name('显示垃圾桶').onChange((v) => {
                     if (v == true) {
                         layer_ljtxx = createFeaturePoint(ljtxx)
                         console.log(ljtxx)
@@ -256,6 +316,201 @@
                         layer.push(tag)
                     })
                     return layer
+                }
+
+
+                //网格管理功能实现
+                let layer_grid = [] // 网格图层
+
+                wgglFolder.add({ hide: false }, 'hide').name('显示网格').onChange((v) => {
+                    if (v) {
+                        creategrid(grid.features)
+                    }
+                    else {
+                        layer_grid.map(grid => {
+                            grid.destruct()
+                        })
+                    }
+                })
+
+                //加载网格图层
+                function creategrid(grid) {
+                    var plist = []
+
+                    grid.map(function (feature) {
+                        var coordinates = feature.geometry.coordinates
+                        var properties = feature.properties
+                        coordinates.map(function (coordinate) {
+
+                            if (coordinate.length != 1) {
+                                plist = transferpoint(coordinate)
+
+                                let volume1 = {
+                                    color: 0xf18100,
+                                    opacity: 0.3,
+                                    points: plist,
+                                    top: 200,
+                                    bottom: 1,
+                                }
+                                let poly = new altizure.PolygonMarker({
+                                    volume: volume1,
+                                    sandbox: sandbox,
+                                    name: 'polygon',
+                                    interactable: true
+                                })
+                                poly.on('click', function (event) {
+                                    request({ properties }) // 发送一个事件，传递给 2D UI 响应
+                                })
+                                poly.on('mouseenter', function (event) {
+                                    poly.color = 0xffffff * 10
+                                })
+                                poly.on('mouseleave', function (event) {
+                                    poly.color = 0xf18100
+                                })
+                                layer_grid.push(poly)
+                            }
+                            else {
+                                plist = transferpoint(coordinate[0])
+                                let volume1 = {
+                                    color: 0xf18100,
+                                    opacity: 0.3,
+                                    points: plist,
+                                    top: 200,
+                                    bottom: 1,
+                                }
+                                let poly = new altizure.PolygonMarker({
+                                    volume: volume1,
+                                    sandbox: sandbox,
+                                    name: 'polygon',
+                                    interactable: true
+                                })
+                                poly.on('click', function (event) {
+                                    request({ properties }) // 发送一个事件，传递给 2D UI 响应
+                                })
+                                poly.on('mouseenter', function (event) {
+                                    poly.color = 0xffffff * 10
+                                })
+                                poly.on('mouseleave', function (event) {
+                                    poly.color = 0xf18100
+                                })
+                                layer_grid.push(poly)
+                            }
+                        })
+                    })
+                }
+
+                function transferpoint(plist) {
+                    const boundary1 = plist.map((lnglat) => {
+                        return new altizure.LngLatAlt(lnglat[0], lnglat[1], 0)
+                    })
+                    return boundary1
+                }
+
+                wgglFolder.add({ hide: false }, 'hide').name('测试网格').onChange((v) => {
+                    if (v) {
+                        createtestgrid(grid)
+                        console.log(layer_grid)
+                    }
+                    else {
+                        layer_grid.map(grid => {
+                            grid.destruct()
+                        })
+                    }
+                })
+                function createtestgrid(grid) {
+                    polygonMarkers = []
+                    features = []
+                    grid.features.map((feature) => {
+                        if (feature.geometry.type === 'Polygon') {
+                            features.push(feature)
+                        }
+                    })
+                    polygonMarkers = altizure.GeoJson.polygonsFromGeoJson(grid, sandbox, {
+                        top: 100,
+                        bottom: 1,
+                        color: 0xffffff * 20,
+                        opacity: 0.2
+                    })
+                    polygonMarkers.map((polygon, i) => {
+                        polygon.color = 0xffffff * 20
+                        polygon.interactable = true
+                        polygon.on('click', function (event) {
+                            var message = features[i].properties
+                            request({ message }) // 发送一个事件，传递给 2D UI 响应
+                        })
+                        polygon.on('mouseenter', function (event) {
+                            polygon.color = 0xffffff * 1000
+                        })
+                        polygon.on('mouseleave', function (event) {
+                            polygon.color = 0xffffff * 20
+                        })
+                        layer_grid.push(polygon)
+                    })
+                }
+
+                /**
+                guixcmy.close()
+                guiwggl.close()
+
+                var xcmy = document.getElementById('xcmy');
+                xcmy.addEventListener('click', function(){
+                    guixcmy.open()
+                    guiwggl.close()
+                    }, false);
+        
+                var wggl = document.getElementById('wggl');
+                wggl.addEventListener('click', function(){
+                     guiwggl.open()
+                     guixcmy.close()  
+                }, false);
+*/
+                //楼层
+                let layer_floor = [] // 楼层图层
+
+                lyjjFolder.add({ hide: false }, 'hide').name('显示楼层').onChange((v) => {
+                    if (v) {
+                        createfloor(wlmp1m.features)
+                    }
+                    else {
+                        layer_floor.map(floor => {
+                            floor.destruct()
+                        })
+                    }
+                })
+
+                function createfloor(data) {
+                    data.map(room => {
+                        if (room.properties.floor == 1) {
+
+                            var plist = []
+                            plist = transferpoint(room.geometry.coordinates[0])
+                            let volume1 = {
+                                color: 0xf18100,
+                                opacity: 0.3,
+                                points: plist,
+                                top: room.properties.height + room.properties.elevation,
+                                bottom: room.properties.elevation,
+                            }
+                            let poly = new altizure.PolygonMarker({
+                                volume: volume1,
+                                sandbox: sandbox,
+                                name: 'polygon',
+                                interactable: true
+                            })
+                            poly.on('click', function (event) {
+                                var proper = room.properties
+                                request({ proper }) // 发送一个事件，传递给 2D UI 响应
+                            })
+                            poly.on('mouseenter', function (event) {
+                                poly.color = 0xffffff * 10
+                            })
+                            poly.on('mouseleave', function (event) {
+                                poly.color = 0xf18100
+                            })
+                            layer_floor.push(poly)
+                        }
+                    })
+
                 }
 
             </script>
