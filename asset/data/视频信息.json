@@ -1,0 +1,48 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "spxx",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1700329153, 30.3124609938, 0 ]
+			},
+			"properties" : {
+				"bh" : "视频_001",
+				"gsbm" : "公安",
+				"fl" : "人脸监控",
+				"dywg" : "三塘苑社区第三网格",
+				"zt" : "完好"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1700329153, 30.3124609938, 0 ]
+			},
+			"properties" : {
+				"bh" : "视频_002",
+				"gsbm" : "城管",
+				"fl" : "高清监控",
+				"dywg" : "三塘苑社区第三网格",
+				"zt" : "完好"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 120.1700329153, 30.3124609938, 0 ]
+			},
+			"properties" : {
+				"bh" : "视频_001",
+				"gsbm" : "交警",
+				"fl" : "车流统计",
+				"dywg" : "三塘苑社区第三网格",
+				"zt" : "完好"
+			}
+		}
+	]
+}
