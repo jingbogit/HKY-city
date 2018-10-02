@@ -429,6 +429,17 @@
         lyjjFolder.add({ hide: false }, 'hide').name('显示楼层').onChange((v) => {
           if (v) {
             layer_floor = createfloor(wlmp1m)
+<<<<<<< HEAD
+
+            //10.2 新加入的部分，所有单元格赋值高程和层高
+            layer_floor.map((block)=>{
+              block.markers.bottom=block.properties.elevation
+              block.markers.top=block.properties.elevation+block.properties.height
+            })
+
+
+=======
+>>>>>>> 07146c86c8b7704c415315c824c7d5486685fa42
           }
           else {
             layer_floor.map(room => {
@@ -440,6 +451,15 @@
         function createfloor(building) {
           let floor1 = []
           building.features.forEach(room => {
+<<<<<<< HEAD
+            //if (room.properties.floor == 1) {
+              floor1.push(room)
+            //}
+          })
+
+          let blockShapes = altizure.GeoJson.polygonsFromGeoJson({features: floor1}, sandbox, {
+            top:10,
+=======
             if (room.properties.floor == 1) {
               floor1.push(room)
             }
@@ -447,17 +467,28 @@
 
           const blockShapes = altizure.GeoJson.polygonsFromGeoJson({features: floor1}, sandbox, {
             top: 10,
+>>>>>>> 07146c86c8b7704c415315c824c7d5486685fa42
             bottom: 1,
             color: 0xf18100,
             opacity: 0.3
           })
 
+<<<<<<< HEAD
+
+          return wlmp1m.features.map((f, ind) => {
+=======
           return grid.features.map((f, ind) => {
+>>>>>>> 07146c86c8b7704c415315c824c7d5486685fa42
             return new Block({
               markers: blockShapes[ind], // {PolygonMarker || PolygonMarker[]}
               properties: f.properties,
               color: 0xf18100
+<<<<<<< HEAD
+            }
+          )
+=======
             })
+>>>>>>> 07146c86c8b7704c415315c824c7d5486685fa42
           })
         }
 
