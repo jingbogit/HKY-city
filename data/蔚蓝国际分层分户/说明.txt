@@ -1,6 +1,0 @@
-字段简单说明:
-
-elevation：底面高程；
-height：层高；
-room：房间号；
-com:公司名称
